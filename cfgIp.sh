@@ -1,10 +1,14 @@
 #!/bin/bash
-
-#VARS
+#
+# This script will detect your main IP and it will configure it staticaly
+# It will only work with Centos 6/7 and Ubuntu 16.04 WITH CLOUD INIT ENABLED
+# If cloud init is already disabled it will not attempt to configure your network
+# If cloud init is enabled, it will disable it and it will configure the static IP
+#
+# getting variables
 os=$(awk '/^ID=/' /etc/*-release | awk -F'=' '{ print tolower($2) }' | sed 's/"//' | sed 's/["]//')
 
 interface=$(ip addr show | awk '/inet.*brd/{print $NF}' | head -n 1)
-
 
 netCentos="/etc/sysconfig/network-scripts/ifcfg-$interface"
 netUbuntu="/etc/network/interfaces"
@@ -14,7 +18,6 @@ maskUbuntu=$(ifconfig $interface | sed -rn '2s/ .*:(.*)$/\1/p')
 
 gateway=$(ip r | grep default | awk '{print $3}')
 
-
 defIP=$(ip -f inet a show $interface | grep inet | awk '{ print $2 }' | cut -d / -f1)
 
 # cloud init location
@@ -22,6 +25,7 @@ cloudInitDisable="/etc/cloud/cloud.cfg.d/99-disable-network-config.cfg"
 cloudInit="/etc/network/interfaces.d/50-cloud-init.cfg"
 # configure static IP functions
 
+# function to configure static IP on centos
 centos () {
         echo "---------------------------------------------------------------"
 	echo "Configuring the interface for $OS"
@@ -45,7 +49,7 @@ centos () {
 	fi
 }
 
-
+# function to configure static IP on Ubuntu 16.04 with Cloud Init Enabled
 ubuntu () {
 
         echo "---------------------------------------------------------------"
