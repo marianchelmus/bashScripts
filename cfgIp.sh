@@ -44,6 +44,9 @@ centos () {
 			sed -i "s/.*GATEWAY.*/&\nDNS2=\"8.8.4.4\"/" $netCentos
 			echo "Interface was configured:"
 			cat $netCentos
+		else
+			echo "Interface was already configured"
+			cat $netCentos
 		fi
 	fi
 }
