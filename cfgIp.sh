@@ -28,7 +28,6 @@ cloudInit="/etc/network/interfaces.d/50-cloud-init.cfg"
 # function to configure static IP on centos
 centos () {
         echo "---------------------------------------------------------------"
-	echo "Configuring the interface for $os"
 	if [ ! -f $netCentos ]
 	then
 		echo "Network configuration file not found... exiting"
@@ -53,7 +52,6 @@ centos () {
 ubuntu () {
 
         echo "---------------------------------------------------------------"
-        echo "Configuring the interface for $os"
         if [ ! -f $netUbuntu ]
         then
                 echo "Configuration file not found... Exiting"
@@ -86,7 +84,7 @@ ubuntu () {
 requirements () {
 ifconfig > /dev/null 2>&1
 if [ $? = 127 ]; then
-        yum install -qy net-tools
+        yum install -y -q net-tools
 elif [ $? = 0 ]; then
         echo "Net-tools is already installed"
         break
@@ -175,7 +173,8 @@ esac
 for z in `cat /tmp/iplist`
 do
 	echo "Successfuly configured: $z"
-	echo "Please reboot your machine now"
 done
+
+echo "Please reboot your machine!"
 # delete /tmp/iplist
 rm -rf /tmp/iplist
