@@ -66,7 +66,8 @@ ubuntu () {
 	       	        touch  $cloudInitDisable
 		        echo "network: {config: disabled}" > $cloudInitDisable
 			echo -e "Network configuration file located at: " '\033[1m' $netUbuntu'\033[0m'
-                        echo "auto $interface" >> $netUbuntu
+                        sed -i 's/source/#&/' $netUbuntu
+			echo "auto $interface" >> $netUbuntu
 			echo "iface $interface inet static" >> $netUbuntu
 			echo "        address $defIP" >> $netUbuntu
                         echo "        netmask $maskUbuntu" >> $netUbuntu
