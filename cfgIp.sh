@@ -1,5 +1,5 @@
 #!/bin/bash
-#
+# maintainer: Marian Chelmus email: chelmus.marian at gmail.com
 # This script will detect your main IP and it will configure it staticaly
 # It will only work with Centos 6/7 and Ubuntu 16.04 WITH CLOUD INIT ENABLED
 # If cloud init is already disabled it will not attempt to configure your network
@@ -12,7 +12,7 @@ interface=$(ip addr show | awk '/inet.*brd/{print $NF}' | head -n 1)
 
 netCentos="/etc/sysconfig/network-scripts/ifcfg-$interface"
 netUbuntu="/etc/network/interfaces"
-
+mask=$(ip -f inet a show $interface | grep inet | awk '{ print $2 }' | rev | cut -d / -f1 | rev)
 maskCentos=$(ip -f inet a show $interface | grep inet | awk '{ print $2 }' | rev | cut -d / -f1 | rev)
 maskUbuntu=$(ifconfig $interface | sed -rn '2s/ .*:(.*)$/\1/p')
 
@@ -28,7 +28,7 @@ cloudInit="/etc/network/interfaces.d/50-cloud-init.cfg"
 # function to configure static IP on centos
 centos () {
         echo "---------------------------------------------------------------"
-	echo "Configuring the interface for $OS"
+	echo "Configuring the interface for $os"
 	if [ ! -f $netCentos ]
 	then
 		echo "Network configuration file not found... exiting"
@@ -53,7 +53,7 @@ centos () {
 ubuntu () {
 
         echo "---------------------------------------------------------------"
-        echo "Configuring the interface for $OS"
+        echo "Configuring the interface for $os"
         if [ ! -f $netUbuntu ]
         then
                 echo "Configuration file not found... Exiting"
@@ -93,21 +93,18 @@ elif [ $? = 0 ]; then
 fi
 }
 
-#check if the IPs entered are in a valid format and saves them to a /tmp/iplist which will be later
-removed
+#check if the IPs entered are in a valid format and saves them to a /tmp/iplist which will be later removed
 validateIps () {
 
 ipValidator='^(([1-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))\.){3}([1-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))$'
 while true
 do
-#       touch /tmp/iplist
+       touch /tmp/iplist
         echo -n "Insert IP [Type 0 to exit]: "
         read IP
         if [[ $IP =~ $ipValidator ]]; then
-                echo "Good"
                 echo $IP >> /tmp/iplist
         elif [[ $IP = 0 ]]; then
-                echo "exiting function"
                 break
         else
                 echo "$IP is not in supported format [Type 0 to exit] "
@@ -136,8 +133,23 @@ do
 done
 }
 
+addIpsUbuntu () {
+echo "" >> $netUbuntu
+for n in `cat /tmp/iplist`
+do
+	echo "post-up ip a a $n/$mask dev $interface" >> $netUbuntu
+done
+}
 
-
+IPsOS () {
+if [ $os == centos ];then
+	addIpsCentos
+elif [ $os ==  ubuntu ];then
+	addIpsUbuntu
+else
+	echo "OS not detected. Please be sure that you are running this on centos or ubuntu machine"
+fi
+}
 
 echo "select the OS  1) Cent0S 2) UBUNTU"
 
@@ -148,20 +160,22 @@ case $n in
     *) invalid option;;
 esac
 
+
+
 echo "Do you want to add more IPs? 1) Yes 2) No"
 read m
 case $m in
-	1) requirements
-	   validateIps
-	   if [ os == centos ]]then;
-		   addIpsCentos
-	   elif [ os == ubuntu ]then;
-		   addIpsUbuntu
-	   else
-		   echo "OS can not be detected. Exiting"
-		   exit 1
-	   fi
-	2) "Scripts finished with no errors. Exiting"
-	    break;
+	1) requirements;
+	   validateIps;
+	   IPsOS;;
+	2) echo "Scripts finished with no errors. Exiting";;
 	*) invalid option;;
 esac
+
+for z in `cat /tmp/iplist`
+do
+	echo "Successfuly configured: $z"
+	echo "Please reboot your machine now"
+done
+# delete /tmp/iplist
+rm -rf /tmp/iplist
