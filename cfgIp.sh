@@ -87,7 +87,8 @@ ubuntu () {
 requirements () {
 ifconfig > /dev/null 2>&1
 if [ $? = 127 ]; then
-        yum install -y -q net-tools
+	echo "Installing net-tools..."
+	yum install -y -q net-tools
 elif [ $? = 0 ]; then
         echo "Net-tools is already installed"
         break
