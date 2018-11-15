@@ -142,9 +142,9 @@ done
 }
 
 IPsOS () {
-if [ $os == centos ];then
+if [ $os == 'centos' ];then
 	addIpsCentos
-elif [ $os ==  ubuntu ];then
+elif [ $os ==  'ubuntu' ];then
 	addIpsUbuntu
 else
 	echo "OS not detected. Please be sure that you are running this on centos or ubuntu machine"
