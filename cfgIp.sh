@@ -169,7 +169,7 @@ case $m in
 	1) requirements;
 	   validateIps;
 	   IPsOS;;
-	2) echo "Scripts finished with no errors. Exiting";;
+	2) exit;;
 	*) invalid option;;
 esac
 
